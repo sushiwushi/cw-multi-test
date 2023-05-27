@@ -151,15 +151,15 @@ where
     ) -> AnyResult<Binary> {
         match request {
             WasmQuery::Smart { contract_addr, msg } => {
-                let addr = api.addr_validate(&contract_addr)?;
+                let addr = api.addr_validate(&contract_addr.to_lowercase())?;
                 self.query_smart(addr, api, storage, querier, block, msg.into())
             }
             WasmQuery::Raw { contract_addr, key } => {
-                let addr = api.addr_validate(&contract_addr)?;
+                let addr = api.addr_validate(&contract_addr.to_lowercase())?;
                 Ok(self.query_raw(addr, storage, &key))
             }
             WasmQuery::ContractInfo { contract_addr } => {
-                let addr = api.addr_validate(&contract_addr)?;
+                let addr = api.addr_validate(&contract_addr.to_lowercase())?;
                 let contract = self.load_contract(storage, &addr)?;
                 let mut res = ContractInfoResponse::default();
                 res.code_id = contract.code_id as u64;
@@ -370,8 +370,8 @@ where
         contract_addr: &str,
         new_admin: Option<String>,
     ) -> AnyResult<AppResponse> {
-        let contract_addr = api.addr_validate(contract_addr)?;
-        let admin = new_admin.map(|a| api.addr_validate(&a)).transpose()?;
+        let contract_addr = api.addr_validate(contract_addr.to_lowercase().as_str())?;
+        let admin = new_admin.map(|a| api.addr_validate(&a.to_lowercase())).transpose()?;
 
         // check admin status
         let mut data = self.load_contract(storage, &contract_addr)?;
@@ -405,7 +405,7 @@ where
                 msg,
                 funds,
             } => {
-                let contract_addr = api.addr_validate(&contract_addr)?;
+                let contract_addr = api.addr_validate(&contract_addr.to_lowercase())?;
                 // first move the cash
                 self.send(
                     api,
@@ -503,7 +503,7 @@ where
                 new_code_id,
                 msg,
             } => {
-                let contract_addr = api.addr_validate(&contract_addr)?;
+                let contract_addr = api.addr_validate(&contract_addr.to_lowercase())?;
 
                 // check admin status and update the stored code_id
                 let new_code_id = new_code_id as usize;
@@ -1518,7 +1518,7 @@ mod test {
                 &block,
                 admin,
                 WasmMsg::UpdateAdmin {
-                    contract_addr: contract_addr.to_string(),
+                    contract_addr: contract_addr.to_string().to_uppercase(),
                     admin: new_admin.to_string(),
                 },
             )
